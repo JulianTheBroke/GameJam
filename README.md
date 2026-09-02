@@ -1,61 +1,34 @@
-# GameJam — Connect Sandbox
+# GameJam
 
-Unity **6000.6.0f1** — open `Assets/Scenes/SampleScene.unity` and press Play.
+Unity 6000.6.0f1
 
-2-player platformer sandbox built around a **tether connection**. Linked = coordinate together (Portal 2 vibe). Broken apart = split screen and explore independently (It Takes Two vibe).
+Open `Assets/Scenes/SampleScene.unity` and hit Play.
 
 ## Controls
 
-| | P1 | P2 |
-|---|---|---|
-| Move | WASD | Arrows |
-| Jump | Space | Enter |
+P1: WASD + Space  
+P2: Arrows + Enter
 
-## Gameplay loop
+Gamepads work too.
 
-1. **Stay linked** — shared camera, tether-relative movement, slower but coordinated
-2. **Solve together** — both stand on pressure plates to open doors
-3. **Stretch too far** — tether breaks, split screen, faster independent movement
-4. **Reconnect** — get close again to link back up
+## What it does
 
-### Linked movement
-- Forward/back = along the tether
-- Left/right = across the tether
-- Best for positioning on plates and moving as a pair
+Two players connected by a tether.
 
-### Split movement
-- Normal camera-relative controls
-- Faster speed + better air control for solo platforming
+- Stay close = one camera, move together
+- Stretch the tether too far = it snaps, screen splits in two
+- Walk back close = tether reconnects, camera merges again
 
-## Scene hierarchy
+There's a demo puzzle in the scene: both players stand on the plates to open the door.
 
-```
-GameManager      ← input + tether
-Players
-  Player1
-  Player2
-CameraRig
-Level
-  Ground / Platform
-  PuzzleDemo       ← example coop door (both plates required)
-Directional Light
-```
+## Scene stuff
 
-## Scripts
+- `GameManager` — input and tether
+- `Players/Player1` and `Player2` — move these in the editor to change spawn spots
+- `CameraRig` — handles the cameras
+- `Level` — build the room here
 
-| Script | Purpose |
-|---|---|
-| `GameManager` | Wires input + connection |
-| `PlayerConnection` | Tether, link/break, pull |
-| `PlatformerController` | Movement (linked vs split) |
-| `DynamicSplitCamera` | Merge / split cameras |
-| `PressurePlate` | Turns on when a player stands on it |
-| `CoopDoor` | Opens when all linked plates are held |
+## Adding puzzles
 
-## Building puzzles
-
-1. Duplicate `Plate_P1` / `Plate_P2` under `Level`
-2. Add a cube with `CoopDoor`, assign the plates in Inspector
-3. Toggle `Require Linked` if the door should only work while connected
-
-`Assets/Prefabs/Player.prefab` is there if you need extra players.
+Copy `Plate_P1` and `Plate_P2` from `Level/PuzzleDemo`.  
+Put a `CoopDoor` on a cube and drag the plates into it in the Inspector.
