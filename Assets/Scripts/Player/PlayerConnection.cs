@@ -1,15 +1,40 @@
 using UnityEngine;
 
+[DefaultExecutionOrder(-50)]
 public class PlayerConnection : MonoBehaviour
 {
     [SerializeField] private PlatformerController player1;
     [SerializeField] private PlatformerController player2;
     [SerializeField] private LineRenderer line;
     [SerializeField] private float maxRadius = 8f;
-    [SerializeField] private float reconnectDistance = 5f;
+    [SerializeField] private float reconnectDistance = 6.5f;
+    [SerializeField] private float tetherHeight = 0.25f;
 
     public bool IsLinked { get; private set; } = true;
     public float StretchRatio { get; private set; }
+    public PlatformerController Player1 => player1;
+    public PlatformerController Player2 => player2;
+
+    public PlatformerController GetPartner(PlatformerController self)
+    {
+        if (self == player1)
+            return player2;
+        if (self == player2)
+            return player1;
+        return null;
+    }
+
+    public bool TryGetTetherSegment(out Vector3 a, out Vector3 b)
+    {
+        a = default;
+        b = default;
+        if (!IsLinked || player1 == null || player2 == null)
+            return false;
+
+        a = TetherPoint(player1.transform);
+        b = TetherPoint(player2.transform);
+        return true;
+    }
 
     void Awake()
     {
@@ -36,11 +61,20 @@ public class PlayerConnection : MonoBehaviour
         float distance = delta.magnitude;
 
         UpdateLinkState(distance);
+        ResolveYank();
         UpdateLine();
 
         float speed = IsLinked ? Mathf.Lerp(1f, 0.65f, StretchRatio) : 1f;
         player1.SetSpeedScale(speed);
         player2.SetSpeedScale(speed);
+    }
+
+    void ResolveYank()
+    {
+        player1.PollYank();
+        player2.PollYank();
+        player1.IsBeingReeled = IsLinked && player2.IsYanking;
+        player2.IsBeingReeled = IsLinked && player1.IsYanking;
     }
 
     void UpdateLinkState(float distance)
@@ -59,8 +93,8 @@ public class PlayerConnection : MonoBehaviour
 
     void UpdateLine()
     {
-        line.SetPosition(0, player1.transform.position + Vector3.up);
-        line.SetPosition(1, player2.transform.position + Vector3.up);
+        line.SetPosition(0, TetherPoint(player1.transform));
+        line.SetPosition(1, TetherPoint(player2.transform));
 
         if (!IsLinked)
         {
@@ -69,8 +103,19 @@ public class PlayerConnection : MonoBehaviour
         }
 
         line.enabled = true;
+        bool yanking = player1.IsYanking || player2.IsYanking;
         Color color = Color.Lerp(new Color(0.2f, 0.9f, 1f), Color.red, StretchRatio);
+        if (yanking)
+            color = new Color(1f, 0.85f, 0.2f);
+
         line.startColor = color;
         line.endColor = color;
+        line.startWidth = yanking ? 0.14f : 0.08f;
+        line.endWidth = yanking ? 0.14f : 0.08f;
+    }
+
+    Vector3 TetherPoint(Transform player)
+    {
+        return player.position + Vector3.up * tetherHeight;
     }
 }

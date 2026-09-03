@@ -7,8 +7,10 @@ public class DynamicSplitCamera : MonoBehaviour
     [SerializeField] private PlayerConnection connection;
     [SerializeField] private Camera camera1;
     [SerializeField] private Camera camera2;
-    [SerializeField] private float followDistance = 9f;
-    [SerializeField] private float followHeight = 4.5f;
+    [SerializeField] private float followDistance = 7f;
+    [SerializeField] private float followHeight = 6.5f;
+    [SerializeField] private float splitFollowDistance = 5f;
+    [SerializeField] private float splitFollowHeight = 8f;
     [SerializeField] private float splitDuration = 0.6f;
 
     private float splitBlend;
@@ -31,8 +33,8 @@ public class DynamicSplitCamera : MonoBehaviour
         splitBlend = Mathf.MoveTowards(splitBlend, targetSplit, step);
 
         GetLinkedPose(out Vector3 linkedPos, out Quaternion linkedRot);
-        GetPlayerPose(player1.transform, player2.transform, out Vector3 pos1, out Quaternion rot1);
-        GetPlayerPose(player2.transform, player1.transform, out Vector3 pos2, out Quaternion rot2);
+        GetSplitPose(player1.transform, out Vector3 pos1, out Quaternion rot1);
+        GetSplitPose(player2.transform, out Vector3 pos2, out Quaternion rot2);
 
         camera1.transform.position = Vector3.Lerp(linkedPos, pos1, splitBlend);
         camera1.transform.rotation = Quaternion.Slerp(linkedRot, rot1, splitBlend);
@@ -54,16 +56,10 @@ public class DynamicSplitCamera : MonoBehaviour
         rotation = Quaternion.LookRotation(lookTarget - position);
     }
 
-    void GetPlayerPose(Transform player, Transform lookToward, out Vector3 position, out Quaternion rotation)
+    void GetSplitPose(Transform player, out Vector3 position, out Quaternion rotation)
     {
-        Vector3 focus = player.position + Vector3.up * 1.2f;
-        Vector3 toOther = lookToward.position - player.position;
-        toOther.y = 0f;
-        if (toOther.sqrMagnitude < 0.1f)
-            toOther = player.forward;
-
-        Vector3 back = -toOther.normalized;
-        position = player.position + Vector3.up * followHeight + back * followDistance;
+        Vector3 focus = player.position + Vector3.up * 0.6f;
+        position = player.position + Vector3.up * splitFollowHeight + Vector3.back * splitFollowDistance;
         rotation = Quaternion.LookRotation(focus - position);
     }
 

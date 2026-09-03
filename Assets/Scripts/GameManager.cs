@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[DefaultExecutionOrder(-200)]
 [RequireComponent(typeof(PlayerInputSetup))]
 [RequireComponent(typeof(PlayerConnection))]
 public class GameManager : MonoBehaviour
