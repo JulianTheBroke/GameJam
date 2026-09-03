@@ -1,28 +1,31 @@
 using UnityEngine;
 
-// Vertical power wire. Player tether crossing it cuts once:
-// top stub dangles from the ceiling mount, bottom half flops to the floor.
+// Vertical power cable. Live = straight + glow. Cut once by player tether:
+// top half dangles, bottom half falls to the floor, sparks fire at the cut.
 public class TetherBeam : MonoBehaviour
 {
-    [SerializeField] Transform top;       // ceiling mount
-    [SerializeField] Transform bottom;    // floor mount (unused after cut)
+    [SerializeField] Transform top;
+    [SerializeField] Transform bottom;
     [SerializeField] PlayerConnection connection;
-    [SerializeField] LineRenderer line;
+    [SerializeField] LineRenderer line;          // live cable / top dangling half
+    [SerializeField] LineRenderer fallingLine;   // bottom half after cut (created if missing)
+    [SerializeField] GameObject sparkPrefab;
     [SerializeField] float hitRadius = 0.9f;
-    [SerializeField] int segments = 10;
-    [SerializeField] float flopSpeed = 6f;
+    [SerializeField] int hangSegments = 6;
+    [SerializeField] float flopSpeed = 5f;
+    [SerializeField] float glowIntensity = 2.2f;
 
-    // Legacy aliases so old scenes still wire
+    // Legacy scene aliases
     [SerializeField] Transform start;
     [SerializeField] Transform end;
 
-    readonly Color liveColor = new Color(1f, 0.85f, 0.15f);
-    readonly Color deadColor = new Color(0.35f, 0.35f, 0.38f);
+    readonly Color liveColor = new Color(1f, 0.9f, 0.25f);
+    readonly Color deadColor = new Color(0.4f, 0.4f, 0.42f);
 
     bool cutLatched;
     float flopT;
     Vector3 cutPoint;
-    Vector3 bottomTip; // animated end of falling half
+    Light glow;
 
     public bool IsCut => cutLatched;
 
@@ -41,11 +44,43 @@ public class TetherBeam : MonoBehaviour
     {
         if (top == null) top = start;
         if (bottom == null) bottom = end;
+
         if (line != null)
         {
-            line.positionCount = segments;
             line.useWorldSpace = true;
+            line.positionCount = 2;
         }
+
+        EnsureFallingLine();
+        EnsureGlow();
+    }
+
+    void EnsureFallingLine()
+    {
+        if (fallingLine != null || line == null)
+            return;
+
+        var go = new GameObject("FallingWire");
+        go.transform.SetParent(transform, false);
+        fallingLine = go.AddComponent<LineRenderer>();
+        fallingLine.sharedMaterial = line.sharedMaterial;
+        fallingLine.startWidth = line.startWidth;
+        fallingLine.endWidth = line.endWidth;
+        fallingLine.useWorldSpace = true;
+        fallingLine.positionCount = 2;
+        fallingLine.enabled = false;
+    }
+
+    void EnsureGlow()
+    {
+        glow = GetComponent<Light>();
+        if (glow == null)
+            glow = gameObject.AddComponent<Light>();
+        glow.type = LightType.Point;
+        glow.color = liveColor;
+        glow.range = 4.5f;
+        glow.intensity = glowIntensity;
+        glow.shadows = LightShadows.None;
     }
 
     void Update()
@@ -71,39 +106,66 @@ public class TetherBeam : MonoBehaviour
 
         cutLatched = true;
         flopT = 0f;
-        cutPoint = Vector3.Lerp(top.position, bottom.position, 0.45f);
-        bottomTip = cutPoint;
+        cutPoint = Vector3.Lerp(top.position, bottom.position, 0.5f);
+
+        // Top half only on main line
+        line.positionCount = hangSegments;
         line.startColor = deadColor;
         line.endColor = deadColor;
-        if (line.material != null)
+        ApplyLineColor(line, deadColor);
+
+        if (fallingLine != null)
         {
-            line.material.color = deadColor;
-            if (line.material.HasProperty("_BaseColor"))
-                line.material.SetColor("_BaseColor", deadColor);
+            fallingLine.enabled = true;
+            fallingLine.positionCount = 2;
+            fallingLine.startColor = deadColor;
+            fallingLine.endColor = deadColor;
+            ApplyLineColor(fallingLine, deadColor);
+            fallingLine.SetPosition(0, cutPoint);
+            fallingLine.SetPosition(1, bottom.position);
         }
+
+        if (glow != null)
+            glow.enabled = false;
+
+        SpawnSparks(cutPoint);
+    }
+
+    void SpawnSparks(Vector3 at)
+    {
+        if (sparkPrefab == null)
+            return;
+
+        GameObject fx = Instantiate(sparkPrefab, at, Quaternion.identity);
+        foreach (var ps in fx.GetComponentsInChildren<ParticleSystem>())
+        {
+            var main = ps.main;
+            main.playOnAwake = true;
+            ps.Play(true);
+        }
+        Destroy(fx, 3f);
     }
 
     void DrawLiveWire()
     {
-        Vector3 a = top.position;
-        Vector3 b = bottom.position;
-        for (int i = 0; i < segments; i++)
-        {
-            float t = i / (segments - 1f);
-            // slight sag so it reads as a cable
-            Vector3 p = Vector3.Lerp(a, b, t);
-            p.x += Mathf.Sin(t * Mathf.PI) * 0.08f;
-            line.SetPosition(i, p);
-        }
+        // Straight energized cable
+        line.positionCount = 2;
+        line.SetPosition(0, top.position);
+        line.SetPosition(1, bottom.position);
         line.startColor = liveColor;
         line.endColor = liveColor;
-        line.startWidth = 0.1f;
-        line.endWidth = 0.1f;
-        if (line.material != null)
+        line.startWidth = 0.11f;
+        line.endWidth = 0.11f;
+        ApplyLineColor(line, liveColor);
+
+        if (fallingLine != null)
+            fallingLine.enabled = false;
+
+        if (glow != null)
         {
-            line.material.color = liveColor;
-            if (line.material.HasProperty("_BaseColor"))
-                line.material.SetColor("_BaseColor", liveColor);
+            glow.enabled = true;
+            glow.intensity = glowIntensity;
+            glow.transform.position = Vector3.Lerp(top.position, bottom.position, 0.5f);
         }
     }
 
@@ -111,34 +173,56 @@ public class TetherBeam : MonoBehaviour
     {
         flopT = Mathf.MoveTowards(flopT, 1f, flopSpeed * Time.deltaTime);
 
-        // Top stub hangs from mount down to cut
-        Vector3 hangEnd = Vector3.Lerp(cutPoint, top.position + Vector3.down * 0.55f, 0.35f);
-        hangEnd.x = top.position.x + Mathf.Sin(Time.time * 2.2f) * 0.12f * flopT;
-
-        // Bottom half falls / flops onto the floor near the mount
-        Vector3 floorPoint = new Vector3(bottom.position.x + 0.8f, bottom.position.y, bottom.position.z);
-        bottomTip = Vector3.Lerp(cutPoint, floorPoint, flopT * flopT);
-        // curl the falling tip
-        Vector3 midFall = Vector3.Lerp(cutPoint, bottomTip, 0.5f);
-        midFall.y = Mathf.Lerp(cutPoint.y, bottom.position.y + 0.05f, flopT);
-
-        int half = segments / 2;
-        for (int i = 0; i < half; i++)
+        // Top half: hangs from ceiling, sways a little
+        Vector3 hangTip = top.position + Vector3.down * 0.7f;
+        hangTip.x += Mathf.Sin(Time.time * 2.4f) * 0.18f * flopT;
+        hangTip.z += Mathf.Cos(Time.time * 1.7f) * 0.08f * flopT;
+        for (int i = 0; i < hangSegments; i++)
         {
-            float t = i / (half - 1f);
-            line.SetPosition(i, Vector3.Lerp(top.position, hangEnd, t));
-        }
-        for (int i = half; i < segments; i++)
-        {
-            float t = (i - half) / (segments - half - 1f);
-            Vector3 p = t < 0.5f
-                ? Vector3.Lerp(hangEnd, midFall, t * 2f)
-                : Vector3.Lerp(midFall, bottomTip, (t - 0.5f) * 2f);
+            float t = i / (hangSegments - 1f);
+            // soft curve so it reads as dangling wire
+            Vector3 p = Vector3.Lerp(top.position, hangTip, t);
+            p.x += Mathf.Sin(t * Mathf.PI) * 0.06f * flopT;
             line.SetPosition(i, p);
         }
+        line.startWidth = 0.09f;
+        line.endWidth = 0.07f;
 
-        line.startWidth = 0.08f;
-        line.endWidth = 0.08f;
+        if (fallingLine == null)
+            return;
+
+        // Bottom half: drops from cut point and settles on the floor as a short strand
+        float len = Vector3.Distance(cutPoint, bottom.position) * 0.85f;
+        Vector3 floorA = new Vector3(bottom.position.x, bottom.position.y + 0.04f, bottom.position.z);
+        Vector3 floorB = floorA + Vector3.right * Mathf.Max(0.4f, len);
+
+        Vector3 fallStart = Vector3.Lerp(cutPoint, floorA, flopT * flopT);
+        Vector3 fallEnd = Vector3.Lerp(bottom.position, floorB, flopT);
+        // keep mid sag while falling
+        if (flopT < 1f)
+        {
+            fallStart.y = Mathf.Lerp(cutPoint.y, floorA.y, flopT * flopT);
+            fallEnd.y = Mathf.Lerp(bottom.position.y, floorB.y, flopT);
+        }
+
+        fallingLine.SetPosition(0, fallStart);
+        fallingLine.SetPosition(1, fallEnd);
+        fallingLine.startWidth = 0.09f;
+        fallingLine.endWidth = 0.09f;
+    }
+
+    static void ApplyLineColor(LineRenderer lr, Color color)
+    {
+        if (lr.material == null)
+            return;
+        lr.material.color = color;
+        if (lr.material.HasProperty("_BaseColor"))
+            lr.material.SetColor("_BaseColor", color);
+        if (lr.material.HasProperty("_EmissionColor"))
+        {
+            lr.material.EnableKeyword("_EMISSION");
+            lr.material.SetColor("_EmissionColor", color * (color.g > 0.5f ? 1.5f : 0f));
+        }
     }
 
     static float SegmentDistance(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)

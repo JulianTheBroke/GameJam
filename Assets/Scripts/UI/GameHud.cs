@@ -9,8 +9,9 @@ public class GameHud : MonoBehaviour
     [SerializeField] PlatformerController player1;
     [SerializeField] PlatformerController player2;
 
-    [Header("Connection bar (Bar_4 empty → Bar_1 solid)")]
+    [Header("Connection bar")]
     [SerializeField] Image barImage;
+    // [0]=Bar_4 empty, [1]=Bar_3, [2]=Bar_2 stripes, [3]=Bar_1 solid/full
     [SerializeField] Sprite[] connectionStages = new Sprite[4];
 
     [Header("Control hints (hide after that player uses move+jump)")]
@@ -115,12 +116,24 @@ public class GameHud : MonoBehaviour
 
     void UpdateConnectionBar(bool force)
     {
-        if (connection == null || barImage == null || connectionStages == null || connectionStages.Length < 2)
+        if (connection == null || barImage == null || connectionStages == null || connectionStages.Length < 4)
             return;
 
-        int count = connectionStages.Length;
-        float curved = Mathf.Pow(Mathf.Clamp01(connection.ConnectionStrength), 0.65f);
-        int stage = Mathf.Clamp(Mathf.RoundToInt(curved * (count - 1)), 0, count - 1);
+        // Linked → always Bar_1 (full). Split → Bar_4/3/2 by how close you are to reconnect.
+        int stage;
+        if (connection.IsLinked)
+        {
+            stage = 3; // Bar_1 solid
+        }
+        else
+        {
+            float p = Mathf.Clamp01(connection.ReconnectProgress);
+            // far → empty(0), mid → Bar_3(1), close → Bar_2(2)
+            stage = Mathf.Clamp(Mathf.FloorToInt(p * 3f), 0, 2);
+            if (p >= 0.95f)
+                stage = 2;
+        }
+
         if (!force && stage == lastStage)
             return;
         if (connectionStages[stage] == null)

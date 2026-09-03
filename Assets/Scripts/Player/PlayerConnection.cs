@@ -24,7 +24,19 @@ public class PlayerConnection : MonoBehaviour
     public PlatformerController Player1 => player1;
     public PlatformerController Player2 => player2;
 
-    // HUD: healthy for most of the leash, falls off near snap
+    // 0 = far while split, 1 = close enough to almost reconnect
+    public float ReconnectProgress
+    {
+        get
+        {
+            if (IsLinked)
+                return 1f;
+            float far = maxRadius + 2f;
+            return 1f - Mathf.Clamp01((CurrentDistance - reconnectDistance) / Mathf.Max(0.01f, far - reconnectDistance));
+        }
+    }
+
+    // Kept for stretch-tinted tether color / misc
     public float ConnectionStrength
     {
         get

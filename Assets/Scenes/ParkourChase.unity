@@ -15498,9 +15498,12 @@ MonoBehaviour:
   bottom: {fileID: 920000019}
   connection: {fileID: 900000004}
   line: {fileID: 920000194}
+  fallingLine: {fileID: 0}
+  sparkPrefab: {fileID: 298820504441083265, guid: 3ab730aff95b64c4ab837ad81f75bafa, type: 3}
   hitRadius: 0.9
-  segments: 10
-  flopSpeed: 6
+  hangSegments: 6
+  flopSpeed: 5
+  glowIntensity: 2.2
   start: {fileID: 920000014}
   end: {fileID: 920000019}
 --- !u!114 &920000191
