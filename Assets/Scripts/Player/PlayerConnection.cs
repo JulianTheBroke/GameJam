@@ -8,6 +8,7 @@ public class PlayerConnection : MonoBehaviour
     [SerializeField] LineRenderer line;
     [SerializeField] float maxRadius = 8f;
     [SerializeField] float reconnectDistance = 6.5f;
+    [SerializeField] float tetherDrop = 0.12f;
 
     public bool IsLinked { get; private set; } = true;
     public float StretchRatio { get; private set; }
@@ -128,7 +129,7 @@ public class PlayerConnection : MonoBehaviour
             if (bounds.max.y > top)
             {
                 top = bounds.max.y;
-                point = new Vector3(bounds.center.x, bounds.max.y, bounds.center.z);
+                point = new Vector3(bounds.center.x, bounds.max.y - tetherDrop, bounds.center.z);
             }
         }
 
