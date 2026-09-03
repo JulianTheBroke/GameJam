@@ -15,8 +15,8 @@ Gamepads: stick + South jump, West yank.
 
 Two robots, one tether.
 
-- **Linked** — one camera, slower, yank reels the partner in
-- **Split** — cameras divide, faster move, higher jump
+- **Linked** — one camera, move faster, higher jumps
+- **Split** —  slower movement, less jump power
 - Stretch too far and the tether snaps. Walk back together to reconnect
 
 ## Rooms
