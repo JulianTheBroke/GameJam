@@ -14,9 +14,9 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 10
-  m_Fog: 0
-  m_FogColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-  m_FogMode: 3
+  m_Fog: 1
+  m_FogColor: {r: 0.9, g: 0.9, b: 0.9, a: 1}
+  m_FogMode: 2
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 1
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
-  m_SkyboxMaterial: {fileID: 10304, guid: 0000000000000000f000000000000000, type: 0}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 042b94d227cce55409e5638127a77d89, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -551,9 +551,14 @@ MonoBehaviour:
   player1: {fileID: 900000315}
   player2: {fileID: 900000325}
   line: {fileID: 900000432}
+  softRadius: 7
   maxRadius: 8
   reconnectDistance: 6.5
+  springStrength: 4.5
+  snapBounce: 2.5
   tetherDrop: 0.12
+  healthyRadius: 7
+  barFalloffPower: 2.4
 --- !u!1 &900000100
 GameObject:
   m_ObjectHideFlags: 0
@@ -797,7 +802,6 @@ MonoBehaviour:
   gravity: -24
   coyoteTime: 0.1
   jumpBufferTime: 0.12
-  yankReelSpeed: 16
 --- !u!114 &900000316
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -953,7 +957,6 @@ MonoBehaviour:
   gravity: -24
   coyoteTime: 0.1
   jumpBufferTime: 0.12
-  yankReelSpeed: 16
 --- !u!114 &900000326
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1141,7 +1144,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -1269,7 +1272,7 @@ MonoBehaviour:
     m_Bits: 1
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
+  m_RenderPostProcessing: 1
   m_Antialiasing: 0
   m_AntialiasingQuality: 2
   m_StopNaN: 0
@@ -2389,6 +2392,7 @@ MonoBehaviour:
   activeColor: {r: 0.25, g: 0.9, b: 1, a: 1}
   blockedColor: {r: 0.7, g: 0.25, b: 0.15, a: 1}
   latch: 0
+  requireLinked: 0
   requireUnlinked: 0
   connection: {fileID: 900000004}
 --- !u!1 &910000044
@@ -2520,6 +2524,7 @@ MonoBehaviour:
   activeColor: {r: 0.25, g: 0.9, b: 1, a: 1}
   blockedColor: {r: 0.7, g: 0.25, b: 0.15, a: 1}
   latch: 0
+  requireLinked: 0
   requireUnlinked: 0
   connection: {fileID: 900000004}
 --- !u!1 &910000050
@@ -4183,6 +4188,7 @@ MonoBehaviour:
   activeColor: {r: 1, g: 0.48, b: 0.22, a: 1}
   blockedColor: {r: 0.7, g: 0.25, b: 0.15, a: 1}
   latch: 1
+  requireLinked: 0
   requireUnlinked: 1
   connection: {fileID: 900000004}
 --- !u!1 &910000122
@@ -4314,6 +4320,7 @@ MonoBehaviour:
   activeColor: {r: 1, g: 0.48, b: 0.22, a: 1}
   blockedColor: {r: 0.7, g: 0.25, b: 0.15, a: 1}
   latch: 1
+  requireLinked: 0
   requireUnlinked: 1
   connection: {fileID: 900000004}
 --- !u!1 &910000128
@@ -6355,11 +6362,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45971ac257a96644fb135df50d7bc624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  start: {fileID: 910000214}
-  end: {fileID: 910000215}
+  top: {fileID: 0}
+  bottom: {fileID: 0}
   connection: {fileID: 900000004}
   line: {fileID: 910000210}
   hitRadius: 0.85
+  segments: 10
+  flopSpeed: 6
+  start: {fileID: 910000214}
+  end: {fileID: 910000215}
 --- !u!1 &910000212
 GameObject:
   m_ObjectHideFlags: 0
@@ -9020,6 +9031,7 @@ MonoBehaviour:
   activeColor: {r: 0.25, g: 0.9, b: 1, a: 1}
   blockedColor: {r: 0.7, g: 0.25, b: 0.15, a: 1}
   latch: 0
+  requireLinked: 0
   requireUnlinked: 0
   connection: {fileID: 900000004}
 --- !u!1 &910000327
@@ -9151,6 +9163,7 @@ MonoBehaviour:
   activeColor: {r: 0.25, g: 0.9, b: 1, a: 1}
   blockedColor: {r: 0.7, g: 0.25, b: 0.15, a: 1}
   latch: 0
+  requireLinked: 0
   requireUnlinked: 0
   connection: {fileID: 900000004}
 --- !u!1 &910000333
@@ -9534,11 +9547,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45971ac257a96644fb135df50d7bc624, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  start: {fileID: 910000349}
-  end: {fileID: 910000350}
+  top: {fileID: 0}
+  bottom: {fileID: 0}
   connection: {fileID: 900000004}
   line: {fileID: 910000345}
   hitRadius: 0.85
+  segments: 10
+  flopSpeed: 6
+  start: {fileID: 910000349}
+  end: {fileID: 910000350}
 --- !u!1 &910000347
 GameObject:
   m_ObjectHideFlags: 0
@@ -10785,11 +10802,11 @@ PrefabInstance:
     - target: {fileID: 1616634938555978762, guid: 875e1294953e48a45a2b48fe9ff3529b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 8195ce7d5d5899f4598bcabd0f43d9fa, type: 2}
+      objectReference: {fileID: 2100000, guid: d27ede84fc175da4aa159c12cefd83db, type: 2}
     - target: {fileID: 7100407494416698487, guid: 875e1294953e48a45a2b48fe9ff3529b, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 8195ce7d5d5899f4598bcabd0f43d9fa, type: 2}
+      objectReference: {fileID: 2100000, guid: d27ede84fc175da4aa159c12cefd83db, type: 2}
     - target: {fileID: 8585786243445123514, guid: 875e1294953e48a45a2b48fe9ff3529b, type: 3}
       propertyPath: m_LocalPosition.x
       value: -4.0085163
@@ -10952,6 +10969,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Wall Button
       objectReference: {fileID: 0}
+    - target: {fileID: 6407599195198629064, guid: 0bda2cae11583254babd394416ecbfc2, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fab93e8224b4702429928832eb54dec4, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -11569,6 +11590,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5850035967955073681, guid: cf2399ec133fa2347b73cfb47dde0a9c, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: be84494ac3d3c614dba250561b77cf74, type: 2}
     - target: {fileID: 8905141550530086654, guid: cf2399ec133fa2347b73cfb47dde0a9c, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
@@ -11958,6 +11983,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 8195ce7d5d5899f4598bcabd0f43d9fa, type: 2}
+    - target: {fileID: 6730341856018877126, guid: 0c9f81e2a3815f841b8a1c1d3e6376c0, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fab93e8224b4702429928832eb54dec4, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
