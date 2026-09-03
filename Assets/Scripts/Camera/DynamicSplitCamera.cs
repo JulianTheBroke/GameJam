@@ -28,7 +28,7 @@ public class DynamicSplitCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        float targetSplit = connection.IsLinked ? 0f : 1f;
+        float targetSplit = connection != null && !connection.IsLinked ? 1f : 0f;
         float step = splitDuration > 0f ? Time.deltaTime / splitDuration : 1f;
         splitBlend = Mathf.MoveTowards(splitBlend, targetSplit, step);
 

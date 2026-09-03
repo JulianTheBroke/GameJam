@@ -15,8 +15,10 @@ public class PlayerConnection : MonoBehaviour
     [SerializeField] float tetherDrop = 0.12f;
     [SerializeField] float healthyRadius = 7f;   // HUD stays full until here
     [SerializeField] float barFalloffPower = 2.4f;
+    [SerializeField] float startupSettleTime = 0.5f;
 
     public bool IsLinked { get; private set; } = true;
+    public bool ParkourPunishmentActive { get; private set; }
     public float StretchRatio { get; private set; }
     public float CurrentDistance { get; private set; }
     public bool JustSnapped { get; private set; }
@@ -67,6 +69,36 @@ public class PlayerConnection : MonoBehaviour
         return true;
     }
 
+    float settleTimer;
+
+    public void ForceUnlink()
+    {
+        if (!IsLinked || player1 == null || player2 == null)
+            return;
+
+        Vector3 delta = player2.transform.position - player1.transform.position;
+        delta.y = 0f;
+        float dist = delta.magnitude;
+        Vector3 dir = dist > 0.001f ? delta / dist : Vector3.right;
+        IsLinked = false;
+        JustSnapped = true;
+        player1.AddImpulse(-dir * snapBounce);
+        player2.AddImpulse(dir * snapBounce);
+    }
+
+    public void ActivateParkourPunishment()
+    {
+        ParkourPunishmentActive = true;
+        ForceUnlink();
+    }
+
+    void Start()
+    {
+        settleTimer = startupSettleTime;
+        player1?.ClearImpulse();
+        player2?.ClearImpulse();
+    }
+
     void Awake()
     {
         if (line != null)
@@ -88,6 +120,15 @@ public class PlayerConnection : MonoBehaviour
         JustReconnected = false;
         if (player1 == null || player2 == null || line == null)
             return;
+
+        if (settleTimer > 0f)
+        {
+            settleTimer -= Time.deltaTime;
+            player1.ClearImpulse();
+            player2.ClearImpulse();
+            UpdateLine();
+            return;
+        }
 
         Vector3 delta = player2.transform.position - player1.transform.position;
         delta.y = 0f;

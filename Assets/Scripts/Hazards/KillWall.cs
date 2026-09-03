@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // Moves forward when started. Knocks players toward the pit (funny fail).
@@ -11,7 +12,26 @@ public class KillWall : MonoBehaviour
     [SerializeField] bool autoStart;
 
     bool running;
+    bool spawnPosCaptured;
     Vector3 startPos;
+    readonly Dictionary<PlatformerController, float> knockCooldowns = new();
+
+    public Vector3 SpawnPosition
+    {
+        get
+        {
+            CaptureSpawnPosition();
+            return startPos;
+        }
+    }
+
+    void CaptureSpawnPosition()
+    {
+        if (spawnPosCaptured)
+            return;
+        startPos = transform.position;
+        spawnPosCaptured = true;
+    }
 
     public void Configure(Vector3 direction, float moveSpeed, float towardPitSign)
     {
@@ -22,6 +42,14 @@ public class KillWall : MonoBehaviour
 
     public void Begin() => running = true;
 
+    public void SetSpawnPosition(Vector3 worldPos)
+    {
+        startPos = worldPos;
+        spawnPosCaptured = true;
+        transform.position = worldPos;
+        running = false;
+    }
+
     public void StopAndReset()
     {
         running = false;
@@ -30,7 +58,7 @@ public class KillWall : MonoBehaviour
 
     void Awake()
     {
-        startPos = transform.position;
+        CaptureSpawnPosition();
         if (autoStart)
             running = true;
 
@@ -47,13 +75,18 @@ public class KillWall : MonoBehaviour
     }
 
     void OnTriggerEnter(Collider other) => Knock(other);
-    void OnTriggerStay(Collider other) => Knock(other);
 
     void Knock(Collider other)
     {
         PlatformerController player = other.GetComponentInParent<PlatformerController>();
         if (player == null)
             return;
+
+        float now = Time.time;
+        if (knockCooldowns.TryGetValue(player, out float next) && now < next)
+            return;
+
+        knockCooldowns[player] = now + 0.4f;
         player.AddImpulse(new Vector3(pitSign * knockForce, upKnock, -2f));
     }
 }

@@ -32,6 +32,7 @@ public class PlatformerController : MonoBehaviour
     float jumpBufferTimer;
 
     public bool IsLinked => connection != null && connection.IsLinked;
+    public bool UseSplitStats => connection != null && !connection.IsLinked && connection.ParkourPunishmentActive;
     public float PlanarSpeed => horizontalVelocity.magnitude;
     public Vector2 MoveInput => moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
     public bool JumpPressedThisFrame => jumpAction != null && jumpAction.WasPressedThisFrame();
@@ -114,9 +115,9 @@ public class PlatformerController : MonoBehaviour
 
         Vector2 input = moveAction.ReadValue<Vector2>();
         Vector3 wishDir = GetMoveDirection(input);
-        float moveSpeed = (IsLinked ? linkedMoveSpeed : splitMoveSpeed) * speedScale;
-        float airControl = IsLinked ? linkedAirControl : splitAirControl;
-        float jumpHeight = IsLinked ? linkedJumpHeight : splitJumpHeight;
+        float moveSpeed = (UseSplitStats ? splitMoveSpeed : linkedMoveSpeed) * speedScale;
+        float airControl = UseSplitStats ? splitAirControl : linkedAirControl;
+        float jumpHeight = UseSplitStats ? splitJumpHeight : linkedJumpHeight;
 
         if (grounded)
             horizontalVelocity = wishDir * moveSpeed;

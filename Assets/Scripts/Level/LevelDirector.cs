@@ -12,6 +12,7 @@ public class LevelDirector : MonoBehaviour
     [SerializeField] GoalPad goal;
     [SerializeField] Transform[] checkpointsP1;
     [SerializeField] Transform[] checkpointsP2;
+    [SerializeField] float parkourHandoffZ = 68f;
 
     int checkpointIndex;
 
@@ -36,7 +37,11 @@ public class LevelDirector : MonoBehaviour
         if (door4 != null && door4.IsOpen)
             checkpointIndex = Mathf.Max(checkpointIndex, 4);
 
-        // both fell
+        // ChaseDirector owns falls once either player enters the parkour wing.
+        if (player1.transform.position.z > parkourHandoffZ
+            || player2.transform.position.z > parkourHandoffZ)
+            return;
+
         if (player1.transform.position.y < -5f || player2.transform.position.y < -5f)
             Respawn();
     }

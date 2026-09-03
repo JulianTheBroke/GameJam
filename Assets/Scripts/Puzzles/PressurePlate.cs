@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PressurePlate : MonoBehaviour
@@ -11,6 +12,7 @@ public class PressurePlate : MonoBehaviour
     [SerializeField] PlayerConnection connection;
 
     Renderer plateRenderer;
+    readonly HashSet<PlatformerController> triggerOccupants = new();
     int occupants;
     bool latched;
 
@@ -43,19 +45,63 @@ public class PressurePlate : MonoBehaviour
     void FixedUpdate()
     {
         occupants = 0;
-        Vector3 center = transform.position + Vector3.up * 0.35f;
-        Vector3 halfExtents = new Vector3(transform.lossyScale.x * 0.4f, 0.5f, transform.lossyScale.z * 0.4f);
-        Collider[] hits = Physics.OverlapBox(center, halfExtents, Quaternion.identity);
-
-        foreach (Collider hit in hits)
+        if (connection != null)
         {
-            if (hit.GetComponent<PlatformerController>() != null)
+            if (PlayerInside(connection.Player1))
                 occupants++;
+            if (PlayerInside(connection.Player2))
+                occupants++;
+        }
+        else
+        {
+            foreach (PlatformerController player in triggerOccupants)
+            {
+                if (player != null && PlayerInside(player))
+                    occupants++;
+            }
         }
 
         if (latch && occupants > 0 && LinkAllowsPress())
             latched = true;
     }
+
+    void OnTriggerEnter(Collider other)
+    {
+        PlatformerController player = other.GetComponent<PlatformerController>();
+        if (player != null)
+            triggerOccupants.Add(player);
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        PlatformerController player = other.GetComponent<PlatformerController>();
+        if (player != null)
+            triggerOccupants.Remove(player);
+    }
+
+    bool PlayerInside(PlatformerController player)
+    {
+        if (player == null)
+            return false;
+
+        Vector3 pos = player.transform.position;
+        Vector3 half = PlateHalfExtents();
+        if (Mathf.Abs(pos.x - transform.position.x) > half.x)
+            return false;
+        if (Mathf.Abs(pos.z - transform.position.z) > half.z)
+            return false;
+
+        float feetY = pos.y;
+        CharacterController cc = player.GetComponent<CharacterController>();
+        if (cc != null)
+            feetY = pos.y + cc.center.y - cc.height * 0.5f;
+
+        float plateTop = transform.position.y + transform.lossyScale.y * 0.5f;
+        return feetY <= plateTop + 0.35f && feetY >= plateTop - 0.25f;
+    }
+
+    Vector3 PlateHalfExtents() =>
+        new Vector3(transform.lossyScale.x * 0.45f, 0.5f, transform.lossyScale.z * 0.45f);
 
     bool LinkAllowsPress()
     {

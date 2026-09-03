@@ -46,3 +46,4 @@ ignore.conf
 # Cursor / local tooling (keep repo Unity-only)
 .cursor/
 .plans/
+Tools/

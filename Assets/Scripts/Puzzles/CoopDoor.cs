@@ -8,11 +8,13 @@ public class CoopDoor : MonoBehaviour
     [SerializeField] PlayerConnection connection;
     [SerializeField] bool requireLinked;
     [SerializeField] bool stayOpen = true;
-    [SerializeField] float openHeight = 3.6f;
-    [SerializeField] float moveSpeed = 4f;
+    [SerializeField] float openHeight = 28f;
+    [SerializeField] float moveSpeed = 12f;
+    [SerializeField] bool deactivateWhenOpen = true;
 
     Vector3 closedPosition;
     bool lockedOpen;
+    bool vanished;
 
     public bool IsOpen => lockedOpen || ConditionsMet();
 
@@ -29,6 +31,9 @@ public class CoopDoor : MonoBehaviour
 
     void Update()
     {
+        if (vanished)
+            return;
+
         bool met = ConditionsMet();
         if (met && stayOpen)
             lockedOpen = true;
@@ -37,6 +42,15 @@ public class CoopDoor : MonoBehaviour
             ? closedPosition + Vector3.up * openHeight
             : closedPosition;
         transform.position = Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
+
+        if (!deactivateWhenOpen || !(stayOpen ? lockedOpen || met : met))
+            return;
+
+        if (Vector3.Distance(transform.position, target) > 0.05f)
+            return;
+
+        vanished = true;
+        gameObject.SetActive(false);
     }
 
     bool ConditionsMet() => AllPlatesSatisfied() && AllBeamsCut() && LinkOk();

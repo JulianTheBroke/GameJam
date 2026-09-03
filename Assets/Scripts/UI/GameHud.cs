@@ -29,6 +29,7 @@ public class GameHud : MonoBehaviour
     int lastStage = -1;
     SpriteRenderer marker1;
     SpriteRenderer marker2;
+    Text winBanner;
 
     void Start()
     {
@@ -45,6 +46,51 @@ public class GameHud : MonoBehaviour
     }
 
     void LateUpdate() => UpdateMarkers();
+
+    GameObject winPanel;
+
+    public void ShowWin(string message = "YOU WIN!")
+    {
+        EnsureWinBanner();
+        winBanner.text = message;
+        winPanel.SetActive(true);
+        winPanel.transform.SetAsLastSibling();
+    }
+
+    void EnsureWinBanner()
+    {
+        if (winBanner != null)
+            return;
+
+        winPanel = new GameObject("WinPanel");
+        winPanel.transform.SetParent(transform, false);
+        var panelRt = winPanel.AddComponent<RectTransform>();
+        panelRt.anchorMin = Vector2.zero;
+        panelRt.anchorMax = Vector2.one;
+        panelRt.offsetMin = Vector2.zero;
+        panelRt.offsetMax = Vector2.zero;
+        var panelBg = winPanel.AddComponent<Image>();
+        panelBg.color = new Color(0f, 0f, 0f, 0.7f);
+        panelBg.raycastTarget = false;
+
+        var go = new GameObject("WinBanner");
+        go.transform.SetParent(winPanel.transform, false);
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(900f, 140f);
+        winBanner = go.AddComponent<Text>();
+        winBanner.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        winBanner.fontSize = 72;
+        winBanner.fontStyle = FontStyle.Bold;
+        winBanner.alignment = TextAnchor.MiddleCenter;
+        winBanner.color = Color.white;
+        winBanner.raycastTarget = false;
+        var outline = go.AddComponent<Outline>();
+        outline.effectColor = Color.black;
+        outline.effectDistance = new Vector2(3f, -3f);
+        winPanel.SetActive(false);
+    }
 
     void PulseBarOnLinkEvents()
     {

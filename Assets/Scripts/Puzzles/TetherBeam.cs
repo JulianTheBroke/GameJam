@@ -49,10 +49,25 @@ public class TetherBeam : MonoBehaviour
         {
             line.useWorldSpace = true;
             line.positionCount = 2;
+            EnsureLineMaterial(line);
         }
 
         EnsureFallingLine();
         EnsureGlow();
+    }
+
+    static void EnsureLineMaterial(LineRenderer lr)
+    {
+        if (lr.sharedMaterial != null)
+            return;
+
+        Shader shader = Shader.Find("Universal Render Pipeline/Unlit")
+            ?? Shader.Find("Unlit/Color")
+            ?? Shader.Find("Sprites/Default");
+        if (shader == null)
+            return;
+
+        lr.sharedMaterial = new Material(shader);
     }
 
     void EnsureFallingLine()
