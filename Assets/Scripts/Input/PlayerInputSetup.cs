@@ -12,33 +12,19 @@ public class PlayerInputSetup : MonoBehaviour
         player1.Setup("Player1", actions);
         player2.Setup("Player2", actions);
 
+        // Only lock devices when two pads need exclusive ownership.
+        // Keyboard bindings are already split (WASD vs arrows), so leave them unbound.
+        if (Gamepad.all.Count < 2)
+            return;
+
         InputUser user1 = InputUser.CreateUserWithoutPairedDevices();
         InputUser user2 = InputUser.CreateUserWithoutPairedDevices();
         users.Add(user1);
         users.Add(user2);
         user1.AssociateActionsWithUser(player1.InputActions);
         user2.AssociateActionsWithUser(player2.InputActions);
-
-        // two pads, or pad + keys, or shared keyboard
-        Keyboard keyboard = Keyboard.current;
-        List<Gamepad> pads = new List<Gamepad>(Gamepad.all);
-
-        if (pads.Count >= 2)
-        {
-            InputUser.PerformPairingWithDevice(pads[0], user1);
-            InputUser.PerformPairingWithDevice(pads[1], user2);
-        }
-        else if (pads.Count == 1)
-        {
-            InputUser.PerformPairingWithDevice(pads[0], user1);
-            if (keyboard != null)
-                InputUser.PerformPairingWithDevice(keyboard, user2);
-        }
-        else if (keyboard != null)
-        {
-            InputUser.PerformPairingWithDevice(keyboard, user1);
-            InputUser.PerformPairingWithDevice(keyboard, user2);
-        }
+        InputUser.PerformPairingWithDevice(Gamepad.all[0], user1);
+        InputUser.PerformPairingWithDevice(Gamepad.all[1], user2);
     }
 
     void OnDestroy()

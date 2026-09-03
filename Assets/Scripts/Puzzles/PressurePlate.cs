@@ -6,6 +6,7 @@ public class PressurePlate : MonoBehaviour
     [SerializeField] Color activeColor = new Color(0.2f, 0.9f, 0.35f);
     [SerializeField] Color blockedColor = new Color(0.7f, 0.25f, 0.15f);
     [SerializeField] bool latch;
+    [SerializeField] bool requireLinked;
     [SerializeField] bool requireUnlinked;
     [SerializeField] PlayerConnection connection;
 
@@ -21,6 +22,14 @@ public class PressurePlate : MonoBehaviour
                 return true;
             return occupants > 0 && LinkAllowsPress();
         }
+    }
+
+    public void Configure(PlayerConnection tether, bool linkedRequired, bool unlinkedRequired, bool latchOn)
+    {
+        connection = tether;
+        requireLinked = linkedRequired;
+        requireUnlinked = unlinkedRequired;
+        latch = latchOn;
     }
 
     void Awake()
@@ -50,9 +59,11 @@ public class PressurePlate : MonoBehaviour
 
     bool LinkAllowsPress()
     {
-        if (!requireUnlinked)
-            return true;
-        return connection != null && !connection.IsLinked;
+        if (requireLinked)
+            return connection != null && connection.IsLinked;
+        if (requireUnlinked)
+            return connection != null && !connection.IsLinked;
+        return true;
     }
 
     void Update()

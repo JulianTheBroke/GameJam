@@ -5,39 +5,37 @@ using UnityEngine.InputSystem;
 public class PlatformerController : MonoBehaviour
 {
     [Header("Linked (together)")]
-    [SerializeField] float linkedMoveSpeed = 5f;
-    [SerializeField] float linkedAirControl = 0.3f;
-    [SerializeField] float linkedJumpHeight = 2.1f;
+    [SerializeField] float linkedMoveSpeed = 5.5f;
+    [SerializeField] float linkedAirControl = 0.35f;
+    [SerializeField] float linkedJumpHeight = 2.2f;
 
-    [Header("Split (apart)")]
-    [SerializeField] float splitMoveSpeed = 7f;
-    [SerializeField] float splitAirControl = 0.75f;
-    [SerializeField] float splitJumpHeight = 3.35f;
+    [Header("Split (apart) — half power")]
+    [SerializeField] float splitMoveSpeed = 2.75f;
+    [SerializeField] float splitAirControl = 0.55f;
+    [SerializeField] float splitJumpHeight = 1.1f;
 
     [Header("Jump")]
     [SerializeField] float gravity = -24f;
     [SerializeField] float coyoteTime = 0.1f;
     [SerializeField] float jumpBufferTime = 0.12f;
 
-    [Header("Yank")]
-    [SerializeField] float yankReelSpeed = 16f;
-
     CharacterController controller;
     InputAction moveAction;
     InputAction jumpAction;
-    InputAction yankAction;
     PlayerConnection connection;
     Transform moveCamera;
     Vector3 horizontalVelocity;
     Vector3 velocity;
+    Vector3 impulseVelocity;
     float speedScale = 1f;
     float coyoteTimer;
     float jumpBufferTimer;
 
     public bool IsLinked => connection != null && connection.IsLinked;
-    public bool IsYanking { get; private set; }
-    public bool IsBeingReeled { get; set; }
     public float PlanarSpeed => horizontalVelocity.magnitude;
+    public Vector2 MoveInput => moveAction != null ? moveAction.ReadValue<Vector2>() : Vector2.zero;
+    public bool JumpPressedThisFrame => jumpAction != null && jumpAction.WasPressedThisFrame();
+    public bool JumpHeld => jumpAction != null && jumpAction.IsPressed();
     public InputActionAsset InputActions { get; private set; }
 
     public void Setup(string mapName, InputActionAsset sourceAsset)
@@ -46,13 +44,16 @@ public class PlatformerController : MonoBehaviour
         InputActionMap map = InputActions.FindActionMap(mapName, true);
         moveAction = map.FindAction("Move", true);
         jumpAction = map.FindAction("Jump", true);
-        yankAction = map.FindAction("Yank");
         map.Enable();
     }
 
     public void SetConnection(PlayerConnection tether) => connection = tether;
     public void SetMoveCamera(Transform cam) => moveCamera = cam;
     public void SetSpeedScale(float scale) => speedScale = scale;
+
+    public void AddImpulse(Vector3 impulse) => impulseVelocity += impulse;
+
+    public void ClearImpulse() => impulseVelocity = Vector3.zero;
 
     public void Teleport(Vector3 position)
     {
@@ -65,13 +66,7 @@ public class PlatformerController : MonoBehaviour
         controller.enabled = wasEnabled;
         velocity = Vector3.zero;
         horizontalVelocity = Vector3.zero;
-        IsBeingReeled = false;
-        IsYanking = false;
-    }
-
-    public void PollYank()
-    {
-        IsYanking = yankAction != null && yankAction.IsPressed() && IsLinked;
+        impulseVelocity = Vector3.zero;
     }
 
     void Awake()
@@ -80,7 +75,6 @@ public class PlatformerController : MonoBehaviour
         SnapToGround();
     }
 
-    // sit on the floor at start / respawn
     void SnapToGround()
     {
         Vector3 pos = transform.position;
@@ -93,19 +87,13 @@ public class PlatformerController : MonoBehaviour
 
         velocity = Vector3.zero;
         horizontalVelocity = Vector3.zero;
+        impulseVelocity = Vector3.zero;
     }
 
     void Update()
     {
         if (moveAction == null)
             return;
-
-        // partner is pulling us in
-        if (IsBeingReeled)
-        {
-            ApplyReelMove();
-            return;
-        }
 
         bool grounded = IsGrounded();
         if (grounded)
@@ -146,34 +134,11 @@ public class PlatformerController : MonoBehaviour
         }
 
         velocity.y += gravity * Time.deltaTime;
-        Vector3 move = horizontalVelocity * Time.deltaTime;
-        move.y = velocity.y * Time.deltaTime;
+        impulseVelocity = Vector3.Lerp(impulseVelocity, Vector3.zero, 8f * Time.deltaTime);
+
+        Vector3 move = (horizontalVelocity + impulseVelocity) * Time.deltaTime;
+        move.y = velocity.y * Time.deltaTime + impulseVelocity.y * Time.deltaTime;
         controller.Move(move);
-    }
-
-    // slide toward the yanking partner
-    void ApplyReelMove()
-    {
-        PlatformerController partner = connection != null ? connection.GetPartner(this) : null;
-        if (partner == null || !partner.IsYanking || !IsLinked)
-        {
-            IsBeingReeled = false;
-            return;
-        }
-
-        Vector3 delta = partner.transform.position - transform.position;
-        if (delta.magnitude < 0.9f)
-        {
-            velocity.y = 0f;
-            horizontalVelocity = Vector3.zero;
-            return;
-        }
-
-        controller.Move(Vector3.ClampMagnitude(delta, yankReelSpeed * Time.deltaTime));
-        velocity.y = 0f;
-        horizontalVelocity = Vector3.zero;
-        if (delta.sqrMagnitude > 0.01f)
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(delta.normalized), 16f * Time.deltaTime);
     }
 
     bool IsGrounded()
@@ -187,7 +152,6 @@ public class PlatformerController : MonoBehaviour
         return Physics.SphereCast(origin, radius, Vector3.down, out _, distance);
     }
 
-    // camera-relative stick
     Vector3 GetMoveDirection(Vector2 input)
     {
         if (input.sqrMagnitude < 0.01f)

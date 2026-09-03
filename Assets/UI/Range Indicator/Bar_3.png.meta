@@ -3,8 +3,8 @@ guid: b91a717a8b2eed445afbd3b45eef1f49
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -332472184821138974
-    second: Bar-1_0
+      213: 6525503012380250596
+    second: Bar_3_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -77,7 +77,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -102,7 +102,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Bar-1_0
+      name: Bar_3_0
       rect:
         serializedVersion: 2
         x: 0
@@ -117,8 +117,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2e9b9063f42d26bf0800000000000000
-      internalID: -332472184821138974
+      spriteID: 4e19aa98a6e3f8a50800000000000000
+      internalID: 6525503012380250596
       vertices: []
       indices: 
       edges: []

@@ -7,10 +7,10 @@ public class DynamicSplitCamera : MonoBehaviour
     [SerializeField] PlayerConnection connection;
     [SerializeField] Camera camera1;
     [SerializeField] Camera camera2;
-    [SerializeField] float followDistance = 7f;
-    [SerializeField] float followHeight = 6.5f;
-    [SerializeField] float splitFollowDistance = 5f;
-    [SerializeField] float splitFollowHeight = 8f;
+    [SerializeField] float followDistance = 5f;
+    [SerializeField] float followHeight = 4.5f;
+    [SerializeField] float splitFollowDistance = 3.5f;
+    [SerializeField] float splitFollowHeight = 5.5f;
     [SerializeField] float splitDuration = 0.6f;
 
     float splitBlend;

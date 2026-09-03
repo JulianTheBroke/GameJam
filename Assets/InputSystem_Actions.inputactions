@@ -25,16 +25,6 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
-                },
-                {
-                    "name": "Yank",
-                    "type": "Button",
-                    "id": "7c8e1a2b-3d4f-5a6b-8c9d-0e1f2a3b4c5d",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
                 }
             ],
             "bindings": [
@@ -125,28 +115,6 @@
                     "action": "Jump",
                     "isComposite": false,
                     "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "a11b22c3-d44e-455f-966a-b77c88d99e00",
-                    "path": "<Keyboard>/leftShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Player1Keyboard",
-                    "action": "Yank",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "b22c33d4-e55f-466a-a77b-c88d99e00f11",
-                    "path": "<Gamepad>/buttonWest",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Player1Gamepad",
-                    "action": "Yank",
-                    "isComposite": false,
-                    "isPartOfComposite": false
                 }
             ]
         },
@@ -168,16 +136,6 @@
                     "name": "Jump",
                     "type": "Button",
                     "id": "a2ba1e47-59fc-5de6-c762-2c05a7642a81",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false,
-                    "priority": 0
-                },
-                {
-                    "name": "Yank",
-                    "type": "Button",
-                    "id": "e55f66a7-b88c-499d-d00e-f11a22b33c44",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -282,28 +240,6 @@
                     "processors": "",
                     "groups": "Player2Gamepad",
                     "action": "Jump",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "a77b88c9-d00e-411f-f22a-b33c44d55e66",
-                    "path": "<Keyboard>/rightShift",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Player2Keyboard",
-                    "action": "Yank",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
-                    "id": "b88c99d0-e11f-422a-a33b-c44d55e66f77",
-                    "path": "<Gamepad>/buttonWest",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "Player2Gamepad",
-                    "action": "Yank",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

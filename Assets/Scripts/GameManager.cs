@@ -12,7 +12,7 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
-        // split cams own the view
+        // Gameplay cams own the view — disable the default Main Camera
         Camera main = Camera.main;
         if (main != null)
         {
