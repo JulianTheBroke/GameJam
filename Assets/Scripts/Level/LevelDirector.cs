@@ -2,27 +2,21 @@ using UnityEngine;
 
 public class LevelDirector : MonoBehaviour
 {
-    [SerializeField] private PlatformerController player1;
-    [SerializeField] private PlatformerController player2;
-    [SerializeField] private PlayerConnection connection;
-    [SerializeField] private CoopDoor door1;
-    [SerializeField] private CoopDoor door2;
-    [SerializeField] private CoopDoor door3;
-    [SerializeField] private CoopDoor door4;
-    [SerializeField] private GoalPad goal;
-    [SerializeField] private Transform[] checkpointsP1;
-    [SerializeField] private Transform[] checkpointsP2;
-    [SerializeField] private Color playerOneColor = new Color(0.25f, 0.75f, 1f);
-    [SerializeField] private Color playerTwoColor = new Color(1f, 0.48f, 0.38f);
+    [SerializeField] PlatformerController player1;
+    [SerializeField] PlatformerController player2;
+    [SerializeField] PlayerConnection connection;
+    [SerializeField] CoopDoor door1;
+    [SerializeField] CoopDoor door2;
+    [SerializeField] CoopDoor door3;
+    [SerializeField] CoopDoor door4;
+    [SerializeField] GoalPad goal;
+    [SerializeField] Transform[] checkpointsP1;
+    [SerializeField] Transform[] checkpointsP2;
 
     int checkpointIndex;
 
     void Awake()
     {
-        if (player1 != null)
-            player1.SetPingColor(playerOneColor);
-        if (player2 != null)
-            player2.SetPingColor(playerTwoColor);
         if (goal != null)
             goal.SetConnection(connection);
     }
@@ -32,6 +26,7 @@ public class LevelDirector : MonoBehaviour
         if (player1 == null || player2 == null)
             return;
 
+        // last opened door is the respawn
         if (door1 != null && door1.IsOpen)
             checkpointIndex = Mathf.Max(checkpointIndex, 1);
         if (door2 != null && door2.IsOpen)
@@ -41,6 +36,7 @@ public class LevelDirector : MonoBehaviour
         if (door4 != null && door4.IsOpen)
             checkpointIndex = Mathf.Max(checkpointIndex, 4);
 
+        // both fell
         if (player1.transform.position.y < -5f || player2.transform.position.y < -5f)
             Respawn();
     }

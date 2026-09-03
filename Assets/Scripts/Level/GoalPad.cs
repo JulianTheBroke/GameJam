@@ -2,12 +2,13 @@ using UnityEngine;
 
 public class GoalPad : MonoBehaviour
 {
-    [SerializeField] private PlayerConnection connection;
+    [SerializeField] PlayerConnection connection;
 
     public bool Reached { get; private set; }
 
     public void SetConnection(PlayerConnection tether) => connection = tether;
 
+    // both players, still linked
     void Update()
     {
         if (Reached || connection == null || !connection.IsLinked)

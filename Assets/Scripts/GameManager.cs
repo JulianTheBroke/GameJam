@@ -6,12 +6,13 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerConnection))]
 public class GameManager : MonoBehaviour
 {
-    [SerializeField] private InputActionAsset inputActions;
-    [SerializeField] private PlatformerController player1;
-    [SerializeField] private PlatformerController player2;
+    [SerializeField] InputActionAsset inputActions;
+    [SerializeField] PlatformerController player1;
+    [SerializeField] PlatformerController player2;
 
     void Awake()
     {
+        // split cams own the view
         Camera main = Camera.main;
         if (main != null)
         {

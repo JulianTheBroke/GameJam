@@ -2,24 +2,16 @@ using UnityEngine;
 
 public class TetherBeam : MonoBehaviour
 {
-    [SerializeField] private Transform start;
-    [SerializeField] private Transform end;
-    [SerializeField] private PlayerConnection connection;
-    [SerializeField] private LineRenderer line;
-    [SerializeField] private float hitRadius = 0.85f;
+    [SerializeField] Transform start;
+    [SerializeField] Transform end;
+    [SerializeField] PlayerConnection connection;
+    [SerializeField] LineRenderer line;
+    [SerializeField] float hitRadius = 0.85f;
 
-    private readonly Color idleColor = new Color(1f, 0.18f, 0.22f);
-    private readonly Color cutColor = new Color(0.25f, 1f, 0.45f);
+    readonly Color idleColor = new Color(1f, 0.18f, 0.22f);
+    readonly Color cutColor = new Color(0.25f, 1f, 0.45f);
 
     public bool IsCut { get; private set; }
-
-    public void Configure(Transform beamStart, Transform beamEnd, PlayerConnection tether, LineRenderer renderer)
-    {
-        start = beamStart;
-        end = beamEnd;
-        connection = tether;
-        line = renderer;
-    }
 
     void Update()
     {
@@ -41,6 +33,7 @@ public class TetherBeam : MonoBehaviour
         line.endWidth = IsCut ? 0.16f : 0.1f;
     }
 
+    // how close the tether is to this beam
     static float SegmentDistance(Vector3 p1, Vector3 q1, Vector3 p2, Vector3 q2)
     {
         Vector3 d1 = q1 - p1;

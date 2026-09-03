@@ -1,41 +1,27 @@
-using System;
 using UnityEngine;
 
 public class CoopDoor : MonoBehaviour
 {
-    [SerializeField] private PressurePlate[] plates;
-    [SerializeField] private TetherBeam[] beams;
-    [SerializeField] private PlayerConnection connection;
-    [SerializeField] private bool requireLinked;
-    [SerializeField] private bool stayOpen = true;
-    [SerializeField] private float openHeight = 3.6f;
-    [SerializeField] private float moveSpeed = 4f;
+    [SerializeField] PressurePlate[] plates;
+    [SerializeField] TetherBeam[] beams;
+    [SerializeField] PlayerConnection connection;
+    [SerializeField] bool requireLinked;
+    [SerializeField] bool stayOpen = true;
+    [SerializeField] float openHeight = 3.6f;
+    [SerializeField] float moveSpeed = 4f;
 
-    private Vector3 closedPosition;
-    private bool lockedOpen;
+    Vector3 closedPosition;
+    bool lockedOpen;
 
     public bool IsOpen => lockedOpen || ConditionsMet();
-    public event Action Opened;
-
-    public void Configure(PlayerConnection tether, bool mustBeLinked, PressurePlate[] requiredPlates, TetherBeam[] requiredBeams, bool remainOpen)
-    {
-        connection = tether;
-        requireLinked = mustBeLinked;
-        plates = requiredPlates ?? Array.Empty<PressurePlate>();
-        beams = requiredBeams ?? Array.Empty<TetherBeam>();
-        stayOpen = remainOpen;
-    }
 
     void Awake() => closedPosition = transform.position;
 
     void Update()
     {
         bool met = ConditionsMet();
-        if (met && !lockedOpen)
-        {
-            lockedOpen = stayOpen;
-            Opened?.Invoke();
-        }
+        if (met && stayOpen)
+            lockedOpen = true; // stay up once solved
 
         bool shouldOpen = stayOpen ? lockedOpen || met : met;
         Vector3 target = shouldOpen ? closedPosition + Vector3.up * openHeight : closedPosition;

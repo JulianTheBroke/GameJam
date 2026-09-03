@@ -2,16 +2,16 @@ using UnityEngine;
 
 public class PressurePlate : MonoBehaviour
 {
-    [SerializeField] private Color idleColor = new Color(0.35f, 0.35f, 0.4f);
-    [SerializeField] private Color activeColor = new Color(0.2f, 0.9f, 0.35f);
-    [SerializeField] private Color blockedColor = new Color(0.7f, 0.25f, 0.15f);
-    [SerializeField] private bool latch;
-    [SerializeField] private bool requireUnlinked;
-    [SerializeField] private PlayerConnection connection;
+    [SerializeField] Color idleColor = new Color(0.35f, 0.35f, 0.4f);
+    [SerializeField] Color activeColor = new Color(0.2f, 0.9f, 0.35f);
+    [SerializeField] Color blockedColor = new Color(0.7f, 0.25f, 0.15f);
+    [SerializeField] bool latch;
+    [SerializeField] bool requireUnlinked;
+    [SerializeField] PlayerConnection connection;
 
-    private Renderer plateRenderer;
-    private int occupants;
-    private bool latched;
+    Renderer plateRenderer;
+    int occupants;
+    bool latched;
 
     public bool IsSatisfied
     {
@@ -21,14 +21,6 @@ public class PressurePlate : MonoBehaviour
                 return true;
             return occupants > 0 && LinkAllowsPress();
         }
-    }
-
-    public void Configure(bool latchOnPress, bool unlinkedOnly, PlayerConnection tether, Color active)
-    {
-        latch = latchOnPress;
-        requireUnlinked = unlinkedOnly;
-        connection = tether;
-        activeColor = active;
     }
 
     void Awake()
@@ -84,22 +76,14 @@ public class PressurePlate : MonoBehaviour
         plateRenderer.material.color = color;
         if (plateRenderer.material.HasProperty("_BaseColor"))
             plateRenderer.material.SetColor("_BaseColor", color);
-        if (plateRenderer.material.HasProperty("_EmissionColor"))
-        {
-            Color emission = IsSatisfied ? color * 0.45f : Color.black;
-            plateRenderer.material.SetColor("_EmissionColor", emission);
-            if (IsSatisfied)
-                plateRenderer.material.EnableKeyword("_EMISSION");
-            else
-                plateRenderer.material.DisableKeyword("_EMISSION");
-        }
-    }
+        if (!plateRenderer.material.HasProperty("_EmissionColor"))
+            return;
 
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.color = IsSatisfied ? activeColor : idleColor;
-        Vector3 center = transform.position + Vector3.up * 0.35f;
-        Vector3 size = new Vector3(transform.lossyScale.x * 0.8f, 1f, transform.lossyScale.z * 0.8f);
-        Gizmos.DrawWireCube(center, size);
+        Color emission = IsSatisfied ? color * 0.45f : Color.black;
+        plateRenderer.material.SetColor("_EmissionColor", emission);
+        if (IsSatisfied)
+            plateRenderer.material.EnableKeyword("_EMISSION");
+        else
+            plateRenderer.material.DisableKeyword("_EMISSION");
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine.InputSystem.Users;
 
 public class PlayerInputSetup : MonoBehaviour
 {
-    private readonly List<InputUser> users = new List<InputUser>();
+    readonly List<InputUser> users = new List<InputUser>();
 
     public void Initialize(InputActionAsset actions, PlatformerController player1, PlatformerController player2)
     {
@@ -16,10 +16,10 @@ public class PlayerInputSetup : MonoBehaviour
         InputUser user2 = InputUser.CreateUserWithoutPairedDevices();
         users.Add(user1);
         users.Add(user2);
-
         user1.AssociateActionsWithUser(player1.InputActions);
         user2.AssociateActionsWithUser(player2.InputActions);
 
+        // two pads, or pad + keys, or shared keyboard
         Keyboard keyboard = Keyboard.current;
         List<Gamepad> pads = new List<Gamepad>(Gamepad.all);
 

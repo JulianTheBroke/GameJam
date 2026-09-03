@@ -5,42 +5,39 @@ using UnityEngine.InputSystem;
 public class PlatformerController : MonoBehaviour
 {
     [Header("Linked (together)")]
-    [SerializeField] private float linkedMoveSpeed = 5f;
-    [SerializeField] private float linkedAirControl = 0.3f;
-    [SerializeField] private float linkedJumpHeight = 2.1f;
+    [SerializeField] float linkedMoveSpeed = 5f;
+    [SerializeField] float linkedAirControl = 0.3f;
+    [SerializeField] float linkedJumpHeight = 2.1f;
 
     [Header("Split (apart)")]
-    [SerializeField] private float splitMoveSpeed = 7f;
-    [SerializeField] private float splitAirControl = 0.75f;
-    [SerializeField] private float splitJumpHeight = 3.35f;
+    [SerializeField] float splitMoveSpeed = 7f;
+    [SerializeField] float splitAirControl = 0.75f;
+    [SerializeField] float splitJumpHeight = 3.35f;
 
     [Header("Jump")]
-    [SerializeField] private float gravity = -24f;
-    [SerializeField] private float coyoteTime = 0.1f;
-    [SerializeField] private float jumpBufferTime = 0.12f;
+    [SerializeField] float gravity = -24f;
+    [SerializeField] float coyoteTime = 0.1f;
+    [SerializeField] float jumpBufferTime = 0.12f;
 
-    [Header("Yank / Ping")]
-    [SerializeField] private float yankReelSpeed = 16f;
-    [SerializeField] private float pingCooldown = 1.4f;
+    [Header("Yank")]
+    [SerializeField] float yankReelSpeed = 16f;
 
-    private CharacterController controller;
-    private InputAction moveAction;
-    private InputAction jumpAction;
-    private InputAction yankAction;
-    private InputAction pingAction;
-    private PlayerConnection connection;
-    private Transform moveCamera;
-    private Vector3 horizontalVelocity;
-    private Vector3 velocity;
-    private float speedScale = 1f;
-    private float coyoteTimer;
-    private float jumpBufferTimer;
-    private float pingTimer;
-    private Color pingColor = new Color(0.3f, 0.8f, 1f);
+    CharacterController controller;
+    InputAction moveAction;
+    InputAction jumpAction;
+    InputAction yankAction;
+    PlayerConnection connection;
+    Transform moveCamera;
+    Vector3 horizontalVelocity;
+    Vector3 velocity;
+    float speedScale = 1f;
+    float coyoteTimer;
+    float jumpBufferTimer;
 
     public bool IsLinked => connection != null && connection.IsLinked;
     public bool IsYanking { get; private set; }
     public bool IsBeingReeled { get; set; }
+    public float PlanarSpeed => horizontalVelocity.magnitude;
     public InputActionAsset InputActions { get; private set; }
 
     public void Setup(string mapName, InputActionAsset sourceAsset)
@@ -50,14 +47,12 @@ public class PlatformerController : MonoBehaviour
         moveAction = map.FindAction("Move", true);
         jumpAction = map.FindAction("Jump", true);
         yankAction = map.FindAction("Yank");
-        pingAction = map.FindAction("Ping");
         map.Enable();
     }
 
     public void SetConnection(PlayerConnection tether) => connection = tether;
     public void SetMoveCamera(Transform cam) => moveCamera = cam;
     public void SetSpeedScale(float scale) => speedScale = scale;
-    public void SetPingColor(Color color) => pingColor = color;
 
     public void Teleport(Vector3 position)
     {
@@ -85,6 +80,7 @@ public class PlatformerController : MonoBehaviour
         SnapToGround();
     }
 
+    // sit on the floor at start / respawn
     void SnapToGround()
     {
         Vector3 pos = transform.position;
@@ -104,9 +100,7 @@ public class PlatformerController : MonoBehaviour
         if (moveAction == null)
             return;
 
-        pingTimer -= Time.deltaTime;
-        TryPing();
-
+        // partner is pulling us in
         if (IsBeingReeled)
         {
             ApplyReelMove();
@@ -152,23 +146,12 @@ public class PlatformerController : MonoBehaviour
         }
 
         velocity.y += gravity * Time.deltaTime;
-
         Vector3 move = horizontalVelocity * Time.deltaTime;
         move.y = velocity.y * Time.deltaTime;
         controller.Move(move);
     }
 
-    void TryPing()
-    {
-        if (pingAction == null || !pingAction.WasPressedThisFrame())
-            return;
-        if (pingTimer > 0f)
-            return;
-
-        pingTimer = pingCooldown;
-        PingBeacon.Spawn(transform.position, pingColor);
-    }
-
+    // slide toward the yanking partner
     void ApplyReelMove()
     {
         PlatformerController partner = connection != null ? connection.GetPartner(this) : null;
@@ -186,8 +169,7 @@ public class PlatformerController : MonoBehaviour
             return;
         }
 
-        Vector3 step = Vector3.ClampMagnitude(delta, yankReelSpeed * Time.deltaTime);
-        controller.Move(step);
+        controller.Move(Vector3.ClampMagnitude(delta, yankReelSpeed * Time.deltaTime));
         velocity.y = 0f;
         horizontalVelocity = Vector3.zero;
         if (delta.sqrMagnitude > 0.01f)
@@ -205,6 +187,7 @@ public class PlatformerController : MonoBehaviour
         return Physics.SphereCast(origin, radius, Vector3.down, out _, distance);
     }
 
+    // camera-relative stick
     Vector3 GetMoveDirection(Vector2 input)
     {
         if (input.sqrMagnitude < 0.01f)

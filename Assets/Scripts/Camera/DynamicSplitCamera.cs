@@ -2,18 +2,18 @@ using UnityEngine;
 
 public class DynamicSplitCamera : MonoBehaviour
 {
-    [SerializeField] private PlatformerController player1;
-    [SerializeField] private PlatformerController player2;
-    [SerializeField] private PlayerConnection connection;
-    [SerializeField] private Camera camera1;
-    [SerializeField] private Camera camera2;
-    [SerializeField] private float followDistance = 7f;
-    [SerializeField] private float followHeight = 6.5f;
-    [SerializeField] private float splitFollowDistance = 5f;
-    [SerializeField] private float splitFollowHeight = 8f;
-    [SerializeField] private float splitDuration = 0.6f;
+    [SerializeField] PlatformerController player1;
+    [SerializeField] PlatformerController player2;
+    [SerializeField] PlayerConnection connection;
+    [SerializeField] Camera camera1;
+    [SerializeField] Camera camera2;
+    [SerializeField] float followDistance = 7f;
+    [SerializeField] float followHeight = 6.5f;
+    [SerializeField] float splitFollowDistance = 5f;
+    [SerializeField] float splitFollowHeight = 8f;
+    [SerializeField] float splitDuration = 0.6f;
 
-    private float splitBlend;
+    float splitBlend;
 
     void Awake()
     {
@@ -38,7 +38,6 @@ public class DynamicSplitCamera : MonoBehaviour
 
         camera1.transform.position = Vector3.Lerp(linkedPos, pos1, splitBlend);
         camera1.transform.rotation = Quaternion.Slerp(linkedRot, rot1, splitBlend);
-
         camera2.transform.position = Vector3.Lerp(linkedPos, pos2, splitBlend);
         camera2.transform.rotation = Quaternion.Slerp(linkedRot, rot2, splitBlend);
 
@@ -48,6 +47,7 @@ public class DynamicSplitCamera : MonoBehaviour
         player2.SetMoveCamera(splitBlend > 0.8f ? camera2.transform : camera1.transform);
     }
 
+    // one shared shot behind both
     void GetLinkedPose(out Vector3 position, out Quaternion rotation)
     {
         Vector3 mid = (player1.transform.position + player2.transform.position) * 0.5f;
@@ -56,6 +56,7 @@ public class DynamicSplitCamera : MonoBehaviour
         rotation = Quaternion.LookRotation(lookTarget - position);
     }
 
+    // one shot behind this player
     void GetSplitPose(Transform player, out Vector3 position, out Quaternion rotation)
     {
         Vector3 focus = player.position + Vector3.up * 0.6f;
@@ -67,7 +68,6 @@ public class DynamicSplitCamera : MonoBehaviour
     {
         float leftWidth = Mathf.Lerp(1f, 0.5f, splitBlend);
         float rightWidth = Mathf.Lerp(0f, 0.5f, splitBlend);
-
         camera1.rect = new Rect(0f, 0f, leftWidth, 1f);
         camera2.rect = new Rect(leftWidth, 0f, rightWidth, 1f);
         camera1.enabled = true;

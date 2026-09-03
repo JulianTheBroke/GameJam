@@ -3,12 +3,11 @@ using UnityEngine;
 [DefaultExecutionOrder(-50)]
 public class PlayerConnection : MonoBehaviour
 {
-    [SerializeField] private PlatformerController player1;
-    [SerializeField] private PlatformerController player2;
-    [SerializeField] private LineRenderer line;
-    [SerializeField] private float maxRadius = 8f;
-    [SerializeField] private float reconnectDistance = 6.5f;
-    [SerializeField] private float tetherHeight = 0.25f;
+    [SerializeField] PlatformerController player1;
+    [SerializeField] PlatformerController player2;
+    [SerializeField] LineRenderer line;
+    [SerializeField] float maxRadius = 8f;
+    [SerializeField] float reconnectDistance = 6.5f;
 
     public bool IsLinked { get; private set; } = true;
     public float StretchRatio { get; private set; }
@@ -31,24 +30,24 @@ public class PlayerConnection : MonoBehaviour
         if (!IsLinked || player1 == null || player2 == null)
             return false;
 
-        a = TetherPoint(player1.transform);
-        b = TetherPoint(player2.transform);
+        a = AntennaPoint(player1.transform);
+        b = AntennaPoint(player2.transform);
         return true;
     }
 
     void Awake()
     {
-        if (line == null)
-        {
-            GameObject lineObj = new GameObject("TetherLine");
-            lineObj.transform.SetParent(transform);
-            line = lineObj.AddComponent<LineRenderer>();
-            line.positionCount = 2;
-            line.useWorldSpace = true;
-            line.startWidth = 0.08f;
-            line.endWidth = 0.08f;
-            line.material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
-        }
+        if (line != null)
+            return;
+
+        GameObject lineObj = new GameObject("TetherLine");
+        lineObj.transform.SetParent(transform);
+        line = lineObj.AddComponent<LineRenderer>();
+        line.positionCount = 2;
+        line.useWorldSpace = true;
+        line.startWidth = 0.08f;
+        line.endWidth = 0.08f;
+        line.material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
     }
 
     void Update()
@@ -77,6 +76,7 @@ public class PlayerConnection : MonoBehaviour
         player2.IsBeingReeled = IsLinked && player1.IsYanking;
     }
 
+    // snap past max, reconnect when close again
     void UpdateLinkState(float distance)
     {
         float startDistance = 3f;
@@ -86,15 +86,14 @@ public class PlayerConnection : MonoBehaviour
 
         if (IsLinked && distance >= maxRadius)
             IsLinked = false;
-
         if (!IsLinked && distance <= reconnectDistance)
             IsLinked = true;
     }
 
     void UpdateLine()
     {
-        line.SetPosition(0, TetherPoint(player1.transform));
-        line.SetPosition(1, TetherPoint(player2.transform));
+        line.SetPosition(0, AntennaPoint(player1.transform));
+        line.SetPosition(1, AntennaPoint(player2.transform));
 
         if (!IsLinked)
         {
@@ -114,8 +113,25 @@ public class PlayerConnection : MonoBehaviour
         line.endWidth = yanking ? 0.14f : 0.08f;
     }
 
-    Vector3 TetherPoint(Transform player)
+    // top of the robot mesh = antennas
+    Vector3 AntennaPoint(Transform player)
     {
-        return player.position + Vector3.up * tetherHeight;
+        float top = float.NegativeInfinity;
+        Vector3 point = player.position + Vector3.up;
+
+        foreach (Renderer renderer in player.GetComponentsInChildren<Renderer>())
+        {
+            if (renderer.gameObject == player.gameObject)
+                continue;
+
+            Bounds bounds = renderer.bounds;
+            if (bounds.max.y > top)
+            {
+                top = bounds.max.y;
+                point = new Vector3(bounds.center.x, bounds.max.y, bounds.center.z);
+            }
+        }
+
+        return point;
     }
 }
